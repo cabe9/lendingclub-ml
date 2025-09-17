@@ -1,0 +1,23 @@
+# === Data and Cache ===
+data/cache/
+*.zip
+*.7z
+*.tar.gz
+.cache/
+
+# === Large datasets ===
+*.csv
+!data/data_dictionary.csv
+!data/samples/**
+
+# === Jupyter Notebooks ===
+.ipynb_checkpoints/
+
+# === Environment files ===
+.env
+.env.*
+*.env
+
+# === System files ===
+.DS_Store
+Thumbs.db

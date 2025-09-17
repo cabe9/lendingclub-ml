@@ -1,0 +1,29 @@
+Column Name,Description
+loan_amnt,Requested loan amount by the borrower
+term,Number of months for the loan (36 or 60)
+int_rate,Annual interest rate for the loan
+installment,Monthly payment if the loan originates
+grade,LendingClub credit grade (A–G)
+sub_grade,"LendingClub subgrade (A1, A2, etc.)"
+emp_title,Borrower’s job title provided at application
+emp_length,Length of employment in years
+home_ownership,Borrower’s home ownership status
+annual_inc,Borrower’s annual income (self-reported)
+verification_status,Whether income was verified by LendingClub
+issue_d,Date when the loan was issued (month/year)
+loan_status,"Current status of the loan (paid, charged-off, etc.)"
+purpose,Borrower-stated purpose for the loan
+title,Loan title provided by the borrower
+zip_code,First three digits of borrower’s ZIP code
+addr_state,State listed by the borrower
+dti,Debt-to-income ratio: monthly debts / income
+earliest_cr_line,Month of borrower’s earliest credit line
+open_acc,Number of open credit lines
+pub_rec,Number of derogatory public records
+revol_bal,Total revolving credit balance
+revol_util,Percent of revolving credit currently used
+total_acc,Total number of credit lines in borrower’s file
+initial_list_status,Initial listing status of the loan (W or F)
+application_type,Individual or joint application
+mort_acc,Number of mortgage accounts
+pub_rec_bankruptcies,Number of public record bankruptcies
