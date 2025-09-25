@@ -21,3 +21,14 @@ data/cache/
 # === System files ===
 .DS_Store
 Thumbs.db
+
+# === Model weights ===
+*.h5
+*.hdf5
+*.keras
+*.ckpt
+*.pkl
+*.joblib
+*.pb
+
+*_scratch.ipynb
