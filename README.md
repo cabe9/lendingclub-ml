@@ -7,7 +7,7 @@ This repository contains a machine learning project that predicts whether borrow
 ## Key Features
 
 * **OpenAI Feature Engineering**
-  Optionally standardizes job titles and other free‑text fields via OpenAI’s API. Results are cached for reproducibility.
+  Optionally standardizes job titles via OpenAI’s API. Results are cached for reproducibility.
 
 * **TensorFlow/Keras Model**
   Trains and evaluates a neural network on engineered features to predict loan repayment status.
