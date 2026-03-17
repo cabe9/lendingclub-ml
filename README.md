@@ -13,6 +13,19 @@ The broader project also served as an end-to-end machine learning case study for
 - Comparing logistic regression with a small TensorFlow/Keras model
 - Evaluating both random splits and a more realistic temporal split
 
+## LLM Feature Engineering (What I Actually Did)
+
+The raw `emp_title` field in the LendingClub dataset is messy free text, with values like `"VP Sales"`, `"rn"`, and `"owner/operator"`.
+
+In this project, I:
+
+- Normalized job titles by lowercasing, removing punctuation, and expanding common abbreviations
+- Sent unique normalized titles to an LLM with a fixed list of about 40 occupation categories
+- Enforced structured output and cached the mapping locally
+- Added the resulting feature as `job_category_40`
+
+This is a one-time preprocessing step. Once the mapping is created, no further LLM calls are needed to train or run the model.
+
 ## Project Overview
 
 The goal is to predict whether a loan ends up `Fully Paid` or `Charged Off`.
@@ -59,6 +72,8 @@ Results may vary depending on environment, random seeds, and whether job title p
 
 - Adding the LLM-derived `job_category_40` feature produced a small but consistent improvement in the stricter temporal logistic-regression rerun, with about `+0.003` validation AUC and `+0.004` test AUC
 - The gain was modest, so the feature was helpful but not transformative in this setting
+
+The LLM-based feature required a one-time labeling pass over unique job titles, cached locally, so it does not require LLM calls during model training or inference.
 
 ## Setup
 
@@ -137,6 +152,7 @@ You likely won’t need these unless something breaks.
 
 ## Limitations / Future Work
 
+- The LLM-based job title categorization produced only a modest gain in this setup. As LLMs continue to improve in consistency and cost efficiency, similar approaches to semantic feature engineering may become more impactful or easier to deploy at scale.
 - Move more logic into reusable Python modules
 - Improve experiment tracking and comparisons
 - Add clearer feature importance analysis
