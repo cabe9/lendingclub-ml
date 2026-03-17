@@ -1,175 +1,153 @@
-# LendingClub-ML: Loan Repayment Prediction with TensorFlow and LLM-Enhanced Features
+# LendingClub-ML
 
-This repository contains a machine learning project that predicts whether borrowers will repay their loans using the publicly available LendingClub dataset. It showcases **LLM-powered feature engineering** — transforming messy text fields like job titles into standardized occupational categories — alongside baseline tabular models (logistic regression) and a TensorFlow/Keras neural network.
+This repo explores whether LLM-based categorization of messy free-text job titles can improve performance in a tabular loan prediction task using the public LendingClub dataset.
 
-The goal is not just "can we predict default?" but: **does an LLM-generated feature materially improve future default prediction, and is that economically worth it?**
+The broader project also served as an end-to-end machine learning case study for me, covering feature selection, preprocessing, baseline modeling, and evaluation. But the most original part of the project was testing whether LLM-generated job-title categories could add useful signal beyond a standard tabular feature set.
 
----
+## What This Project Shows
 
-## Key Features
+- Exploring whether LLM-based categorization of free-text job titles adds measurable value in a tabular ML problem
+- Preparing a real public dataset for modeling
+- Thinking about target leakage and using mostly origination-time features
+- Basic EDA and feature engineering for tabular data
+- Comparing logistic regression with a small TensorFlow/Keras model
+- Evaluating both random splits and a more realistic temporal split
 
-### LLM Feature Engineering (Core Signal)
-We normalize borrower job titles into ~40 standardized occupation categories such as "Commercial Driving", "Healthcare Practitioner", "Executive Management", etc. That derived categorical feature is called `job_category_40`.
+## Project Overview
 
-Pipeline details:
-- Clean and normalize the raw free-text job title (`emp_title`) by lowercasing, stripping punctuation, collapsing aliases like `vp` → `vice president`, `rn` → `registered nurse`, etc.
-- Send unique normalized titles to an LLM with a fixed allowed category list.
-- Enforce strict JSON output, validate, and cache the mapping to disk.
+The goal is to predict whether a loan ends up `Fully Paid` or `Charged Off`.
 
-That mapping is merged back into the loan dataset as a model input feature.
+The rough workflow in the notebook:
 
-### Baseline Tabular Models
-We train and evaluate:
-- Logistic Regression
-- A small fully connected TensorFlow/Keras model (2 hidden layers + dropout)
+1. Download and explore the LendingClub dataset
+2. Select a smaller set of mostly origination-time features
+3. Build a modeling dataframe with numeric and categorical features
+4. Optionally normalize and group job titles using the OpenAI API
+5. Train a few baseline models
+6. Re-evaluate using a temporal split to better reflect real-world performance
 
-Both are evaluated on an **out-of-time / temporal split**: older loans for training, newer loans for testing. This simulates "train on history, predict on future vintages," which is closer to how real underwriting works than a random split.
-
-### Clean Project Structure
-- Project root includes MIT license and `.gitignore`
-- Notebook documents the full pipeline end to end
-- Processed parquet and cached mappings let you reproduce results without paying for the LLM again
-
-### Kaggle Integration
-The project can pull the LendingClub dataset from Kaggle. The repo also includes a small sample dataset so you can run the notebook without downloading the full 1M+ rows immediately.
-
----
-
-## Project Structure
+## Repository Structure
 
 ```text
 Lendingclub-ml/
-  data/
-    data_dictionary.csv        # rewritten data dictionary
-    samples/                   # small sample CSV for demo runs
-    processed/                 # parquet / sample outputs (gitignored if large)
-    cache/                     # cached job-title→category mapping
   Notebooks/
-    Lendingclub-ml.ipynb       # main notebook with full pipeline
-  src/
-    preprocessing.py           # non-LLM feature engineering
-    fe_openai.py               # LLM-based job title categorization
-    model.py                   # model definition / training helpers
-  LICENSE
+    Lendingclub-ml.ipynb      # main notebook
+  data/
+    data_dictionary.csv
+    cache/                    # local, not committed
+    processed/                # local, not committed
   README.md
-  .gitignore
+  LICENSE
+  requirements.txt
 ```
 
----
+Notes:
 
-## Getting Started
+- Some systems are case-sensitive, so `Notebooks` must be capitalized
+- `data/cache` and `data/processed` are local working directories
+- This is a notebook-first project; there is no full `src/` package yet
 
-### 1) Clone this repository
+## Results (Approximate)
+
+From the temporal split section:
+
+- Logistic Regression: val AUC `~0.711`, test AUC `~0.701`
+- Small DNN: test AUC `~0.704`
+- Logistic Regression without LendingClub pricing features: test AUC `~0.669`
+
+Results may vary depending on environment, random seeds, and whether job title processing is used.
+
+- Adding the LLM-derived `job_category_40` feature produced a small but consistent improvement in the stricter temporal logistic-regression rerun, with about `+0.003` validation AUC and `+0.004` test AUC
+- The gain was modest, so the feature was helpful but not transformative in this setting
+
+## Setup
+
+Clone the repo:
 
 ```bash
 git clone https://github.com/cabe9/lendingclub-ml.git
 cd lendingclub-ml
 ```
 
-### 2) Install dependencies
+Create an environment and install dependencies:
 
 ```bash
+python -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 3) (Optional) Download full dataset with KaggleHub
+`conda` or another environment manager is fine too.
 
-If you have a Kaggle account and API token:
+Open the notebook:
+
+```bash
+jupyter notebook Notebooks/Lendingclub-ml.ipynb
+```
+
+## Running the Project
+
+### Dataset
+
+The notebook downloads the dataset using `kagglehub`:
 
 ```python
 import kagglehub
 path = kagglehub.dataset_download("wordsforthewise/lending-club")
-print("Path to dataset files:", path)
+print(path)
 ```
 
-You can then point the notebook at the large `accepted_*.csv` file under that path. The repo also ships a tiny sample under `data/samples/` so you can run quickly without downloading the full dataset.
+You’ll need Kaggle set up locally for this to work.
 
-### 4) Run the main notebook
+### Optional OpenAI Features
 
-```bash
-jupyter notebook "Notebooks/Lendingclub-ml.ipynb"
-```
+There is an optional section that maps job titles to categories using the OpenAI API.
 
-### 5) Enable LLM-based feature engineering (optional at runtime, core to the method)
+If you want to use it, set your API key before starting Jupyter.
 
-To regenerate the occupation category feature yourself, you’ll need an API key:
-
-**macOS / Linux:**
+macOS/Linux:
 
 ```bash
 export OPENAI_API_KEY="your_api_key_here"
 ```
 
-**Windows (PowerShell):**
+Windows PowerShell:
 
 ```powershell
 setx OPENAI_API_KEY "your_api_key_here"
 ```
 
-If you don’t set an API key, the notebook can fall back to the cached job-title mapping that’s already been generated. That lets you reproduce results without incurring new LLM cost.
+Results are cached in `data/cache` so they don’t need to be recomputed.
 
----
+### Paths
 
-## Results (Temporal Generalization)
+The notebook mostly uses repo-relative paths, but supports optional overrides:
 
-We train on older loans and test on newer loans (temporal split). This is meant to approximate real deployment conditions: "you built a model today, can it predict next year’s repayment behavior."
+- `LENDINGCLUB_ML_ROOT`
+- `LENDINGCLUB_DATASET_DIR`
 
-Below are out-of-time test results:
-
-| Model                 | Features Used                          | Test AUC |
-|-----------------------|----------------------------------------|----------|
-| Logistic Regression   | No occupation feature                  | ~0.669   |
-| Logistic Regression   | + LLM `job_category_40`                | ~0.701   |
-| TensorFlow MLP (3 ep) | + LLM `job_category_40`                | ~0.704   |
-
-Interpretation:
-- Adding a single LLM-derived categorical feature (standardized occupation) improves out-of-time AUC by roughly +0.03 to +0.035.
-- Logistic regression and a small neural net land in a similar range once the LLM feature is present, which is useful: you don’t necessarily need a deep model to benefit from the enriched feature.
-
-In credit modeling, an AUC lift of a few hundredths on future vintages is economically meaningful because it can support either higher approval rates at constant risk or lower expected losses at constant approval rates.
-
----
-
-## LLM Cost / Practical Notes
-
-Generating the occupation category feature (`job_category_40`) required classifying ~290k unique normalized job titles into one of ~40 allowed buckets.
-
-This labeling step was done with `gpt-5-mini` in batched calls (with strict JSON validation and caching), and cost on the order of **$20 USD**.
-
-Why this is still practical in a real setting:
-
-- This is a **one-time enrichment** pass over historical data. After the mapping is created and cached, future model training and inference use only tabular features; no live LLM calls are required.
-- In production, you would typically:
-  - Cache the category for every job title string you’ve already seen.
-  - For new applications, only classify titles you’ve never seen before.
-  - Optionally distill a lightweight local classifier from this mapping so you never have to call the LLM online.
-
-Open questions / future work (contributions welcome):
-- Can a cheaper/smaller model (for example, a `...-nano` tier) produce categories that are "good enough" for similar AUC lift, at lower cost?
-- Can we learn a small local text classifier from the cached mapping and remove the LLM from the loop entirely at inference time?
-- Can we reduce prompt overhead and batching overhead to push the labeling cost even lower?
-
-This approach is commercially relevant: a one-time ~$20 categorization pass produced a feature that improved out-of-time AUC by ~0.03+. In many lending and portfolio risk settings, that level of improvement is financially material.
-
----
+You likely won’t need these unless something breaks.
 
 ## Reproducibility Notes
 
-- **Caching:** The job-title → occupation mapping produced by the LLM is cached under `data/cache/`. This prevents re-spending money on repeated titles.
-- **Processed parquet:** A preprocessed dataset (`df_model_ready.parquet`) is saved under `data/processed/` so you can jump straight into modeling.
-- **Secrets:** API keys are environment variables; they are not stored in the repo.
-- **Temporal split:** The notebook includes both a traditional random split and an explicit temporal split to show the difference.
+- The dataset is not included
+- Processed files are not committed
+- The notebook is still somewhat exploratory in places
+- The temporal split section is the most reliable evaluation
 
----
+## Limitations / Future Work
+
+- Move more logic into reusable Python modules
+- Improve experiment tracking and comparisons
+- Add clearer feature importance analysis
+- Introduce a more explicit train/val/test structure earlier
+- Try additional non-neural tabular models
 
 ## License
 
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
-
----
+MIT License. See [LICENSE](LICENSE).
 
 ## Acknowledgments
 
-- LendingClub dataset via Kaggle
-- Occupation category ontology and mapping pipeline defined and implemented here
-- TensorFlow / scikit-learn used for modeling and evaluation
+- LendingClub dataset via [Kaggle](https://www.kaggle.com/wordsforthewise/lending-club)
+- Built as a personal machine learning project

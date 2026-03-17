@@ -1,22 +1,31 @@
 # === Data and Cache ===
 data/cache/
+data/processed/
 *.zip
 *.7z
 *.tar.gz
 .cache/
+*.parquet
+*.feather
 
 # === Large datasets ===
 *.csv
 !data/data_dictionary.csv
-!data/samples/**
 
 # === Jupyter Notebooks ===
 .ipynb_checkpoints/
+Notebooks/Lendingclub-ml.py
 
 # === Environment files ===
 .env
 .env.*
 *.env
+.venv/
+venv/
+env/
+ENV/
+__pycache__/
+.python-version
 
 # === System files ===
 .DS_Store
@@ -30,5 +39,13 @@ Thumbs.db
 *.pkl
 *.joblib
 *.pb
+models/
 
 *_scratch.ipynb
+
+# === Editor / tooling ===
+.vscode/
+.idea/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
