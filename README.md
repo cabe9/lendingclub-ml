@@ -1,8 +1,24 @@
 # LendingClub-ML
 
-This repo explores whether LLM-based categorization of messy free-text job titles can improve performance in a tabular loan prediction task using the public LendingClub dataset.
+## Problem
 
-The broader project also served as an end-to-end machine learning case study for me, covering feature selection, preprocessing, baseline modeling, and evaluation. But the most original part of the project was testing whether LLM-generated job-title categories could add useful signal beyond a standard tabular feature set.
+Can LLM-based categorization of messy free-text job titles improve performance in a tabular loan default prediction task?
+
+## Method
+
+- Built a tabular ML pipeline on the LendingClub dataset using mostly origination-time features
+- Normalized and mapped job titles into about 40 categories using an LLM
+- Compared logistic regression and a small neural network
+- Evaluated using both random splits and a more realistic temporal split
+
+## Results
+
+- Logistic Regression: test AUC `~0.701`
+- Small DNN: test AUC `~0.704`
+- Removing LendingClub pricing features reduced AUC to `~0.669`
+- LLM-derived job category feature added a small but consistent gain of about `+0.003` to `+0.004` AUC
+
+This repository is a notebook-first, end-to-end machine learning case study designed to explore feature engineering and evaluation choices in tabular models.
 
 ## What This Project Shows
 
