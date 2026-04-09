@@ -17,12 +17,37 @@ Can LLM-based categorization of messy free-text job titles improve performance i
 
 - Logistic Regression: test AUC `~0.701`
 - Small DNN: test AUC `~0.704`
+- LightGBM with minimal tuning: test AUC `~0.710`
 - Removing LendingClub pricing features reduced AUC to `~0.669`
 - LLM-derived job category feature added a small but consistent gain of about `+0.003` to `+0.004` AUC
 - In a controlled temporal comparison, a strong lexical baseline using TF-IDF on normalized job titles outperformed the coarser LLM category feature
 - Adding `job_category_40` on top of TF-IDF changed test AUC by only about `+0.0001`, which suggests TF-IDF already captures most of the usable job-title signal in this setup
 
 This repository is a notebook-first, end-to-end machine learning case study designed to explore feature engineering and evaluation choices in tabular models.
+
+## Final Results
+
+### Controlled Representation Comparison
+
+Same temporal split, same linear model, and same preprocessing. The only change here is how job-title information is represented.
+
+| Setup | Valid AUC | Test AUC | Takeaway |
+|---|---:|---:|---|
+| No job-title feature | 0.707 | 0.694 | baseline |
+| LLM category (`job_category_40`) | 0.710 | 0.698 | small gain over no title |
+| TF-IDF (`emp_title_clean`) | 0.715 | 0.704 | strongest job-title representation |
+| TF-IDF + LLM | 0.715 | 0.704 | negligible extra lift |
+
+### Other Temporal Benchmarks
+
+| Model | Valid AUC | Test AUC | Takeaway |
+|---|---:|---:|---|
+| Logistic Regression (`job_category_40`) | 0.712 | 0.700 | simple structured baseline |
+| Small DNN (`job_category_40`) | 0.711 | 0.704 | similar to logistic |
+| Logistic Regression (no pricing features) | 0.666 | 0.669 | pricing and grade features dominate |
+| LightGBM (`job_category_40`, minimal tuning) | 0.717 | 0.710 | strongest overall baseline tested |
+
+Coefficient inspection of the linear TF-IDF model suggests that most of the predictive signal comes from credit-grade and underwriting variables such as `sub_grade`, `term_months`, `fico_mid`, and `annual_inc`, while job-title terms add smaller secondary effects.
 
 ## What This Project Shows
 
@@ -87,6 +112,7 @@ From the temporal split section:
 
 - Logistic Regression: val AUC `~0.711`, test AUC `~0.701`
 - Small DNN: test AUC `~0.704`
+- LightGBM with minimal tuning: val AUC `~0.717`, test AUC `~0.710`
 - Logistic Regression without LendingClub pricing features: test AUC `~0.669`
 
 Results may vary depending on environment, random seeds, and whether job title processing is used.
@@ -173,15 +199,23 @@ You likely won’t need these unless something breaks.
 - The notebook is still somewhat exploratory in places
 - The temporal split section is the most reliable evaluation
 
+## What I Learned
+
+- Temporal splits give a stricter and more realistic estimate than random splits on this dataset.
+- Simple linear baselines are strong, especially when paired with TF-IDF on short text fields.
+- LLM-derived categories make messy job titles more standardized and interpretable, but they compress some of the lexical signal that TF-IDF keeps.
+- LendingClub pricing and grade features dominate performance in this setup.
+- A standard tree-based baseline like LightGBM is competitive with minimal tuning.
+
 ## Limitations / Future Work
 
 - The LLM-based job title categorization produced only a modest gain in this setup. As LLMs continue to improve in consistency and cost efficiency, similar approaches to semantic feature engineering may become more impactful or easier to deploy at scale.
 - Compare job-title representations more systematically, including stronger text baselines and hybrid approaches that combine raw text with LLM-derived groupings
 - Move more logic into reusable Python modules
 - Improve experiment tracking and comparisons
-- Add clearer feature importance analysis
+- Expand the feature-importance and interpretability analysis beyond the linear-model coefficient view
 - Introduce a more explicit train/val/test structure earlier
-- Try additional non-neural tabular models
+- Compare LightGBM with other tree-based tabular models such as CatBoost or XGBoost
 
 ## License
 

@@ -1,5 +1,6 @@
 backoff==2.2.1
 kagglehub==0.3.13
+lightgbm==4.6.0
 matplotlib==3.10.6
 numpy==2.3.3
 openai==1.109.1
