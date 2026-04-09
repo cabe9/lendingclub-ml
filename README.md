@@ -8,6 +8,8 @@ Can LLM-based categorization of messy free-text job titles improve performance i
 
 - Built a tabular ML pipeline on the LendingClub dataset using mostly origination-time features
 - Normalized and mapped job titles into about 40 categories using an LLM
+- Compared the LLM-derived category against simpler job-title baselines, including TF-IDF on normalized titles
+- Ran the representation comparison under the same temporal split, same linear model, and same preprocessing so the only change was how job-title information was represented
 - Compared logistic regression and a small neural network
 - Evaluated using both random splits and a more realistic temporal split
 
@@ -17,12 +19,15 @@ Can LLM-based categorization of messy free-text job titles improve performance i
 - Small DNN: test AUC `~0.704`
 - Removing LendingClub pricing features reduced AUC to `~0.669`
 - LLM-derived job category feature added a small but consistent gain of about `+0.003` to `+0.004` AUC
+- In a controlled temporal comparison, a strong lexical baseline using TF-IDF on normalized job titles outperformed the coarser LLM category feature
+- Adding `job_category_40` on top of TF-IDF changed test AUC by only about `+0.0001`, which suggests TF-IDF already captures most of the usable job-title signal in this setup
 
 This repository is a notebook-first, end-to-end machine learning case study designed to explore feature engineering and evaluation choices in tabular models.
 
 ## What This Project Shows
 
 - Exploring whether LLM-based categorization of free-text job titles adds measurable value in a tabular ML problem
+- Comparing LLM-based semantic grouping against a strong lexical baseline
 - Preparing a real public dataset for modeling
 - Thinking about target leakage and using mostly origination-time features
 - Basic EDA and feature engineering for tabular data
@@ -88,6 +93,8 @@ Results may vary depending on environment, random seeds, and whether job title p
 
 - Adding the LLM-derived `job_category_40` feature produced a small but consistent improvement in the stricter temporal logistic-regression rerun, with about `+0.003` validation AUC and `+0.004` test AUC
 - The gain was modest, so the feature was helpful but not transformative in this setting
+- In a controlled representation comparison using the same temporal split, same linear model, and same preprocessing, TF-IDF on normalized job titles performed better than the coarser LLM category feature. That suggests TF-IDF retains more predictive signal, while the LLM feature provides a more compact, standardized, and interpretable representation.
+- Combining TF-IDF with `job_category_40` produced only a negligible additional lift of about `+0.0001` test AUC, so TF-IDF appears to capture most of the usable job-title signal in this setup
 
 The LLM-based feature required a one-time labeling pass over unique job titles, cached locally, so it does not require LLM calls during model training or inference.
 
@@ -169,6 +176,7 @@ You likely won’t need these unless something breaks.
 ## Limitations / Future Work
 
 - The LLM-based job title categorization produced only a modest gain in this setup. As LLMs continue to improve in consistency and cost efficiency, similar approaches to semantic feature engineering may become more impactful or easier to deploy at scale.
+- Compare job-title representations more systematically, including stronger text baselines and hybrid approaches that combine raw text with LLM-derived groupings
 - Move more logic into reusable Python modules
 - Improve experiment tracking and comparisons
 - Add clearer feature importance analysis
